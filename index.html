@@ -2,59 +2,19 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DJ GOD PRO</title>
+<title>DJ GOD FINAL</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="app">
+<h2>DJ GOD 🔥</h2>
 
-  <!-- DECK A -->
-  <div class="deck">
-    <div class="vinyl" id="vinylA"></div>
-    <button onclick="playDeck('A')">▶</button>
-    <button onclick="pauseDeck('A')">⏸</button>
+<canvas id="canvas"></canvas>
 
-    <input type="range" min="-50" max="50" value="0" oninput="setPitch('A', this.value)">
-    
-    <div class="eq">
-      LOW <input type="range" min="-20" max="20" value="0" oninput="setEQ('A','low',this.value)">
-      MID <input type="range" min="-20" max="20" value="0" oninput="setEQ('A','mid',this.value)">
-      HIGH <input type="range" min="-20" max="20" value="0" oninput="setEQ('A','high',this.value)">
-    </div>
+<img id="source" src="img/pack.png" hidden>
 
-    <button onclick="setLoop('A')">LOOP</button>
-  </div>
-
-  <!-- MIXER -->
-  <div class="mixer">
-    <input type="range" min="0" max="100" value="50" oninput="setCrossfader(this.value)">
-  </div>
-
-  <!-- DECK B -->
-  <div class="deck">
-    <div class="vinyl" id="vinylB"></div>
-    <button onclick="playDeck('B')">▶</button>
-    <button onclick="pauseDeck('B')">⏸</button>
-
-    <input type="range" min="-50" max="50" value="0" oninput="setPitch('B', this.value)">
-
-    <div class="eq">
-      LOW <input type="range" min="-20" max="20" value="0" oninput="setEQ('B','low',this.value)">
-      MID <input type="range" min="-20" max="20" value="0" oninput="setEQ('B','mid',this.value)">
-      HIGH <input type="range" min="-20" max="20" value="0" oninput="setEQ('B','high',this.value)">
-    </div>
-
-    <button onclick="setLoop('B')">LOOP</button>
-  </div>
-
-</div>
-
-<canvas id="waveform" width="600" height="150"></canvas>
-
-<audio id="audioA" src="audio/deckA_1.mp3"></audio>
-<audio id="audioB" src="audio/deckB_1.mp3"></audio>
+<audio id="audioA" src="audio/deckA.mp3"></audio>
+<audio id="audioB" src="audio/deckB.mp3"></audio>
 
 <script src="script.js"></script>
 </body>
