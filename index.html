@@ -3,68 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DJ APP PRO</title>
+<title>DJ Turntable</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h2>DJ APP PRO 🔥</h2>
-
-<div class="app">
-
-  <!-- DECK A -->
-  <div class="deck">
-    <canvas id="waveA"></canvas>
-
-    <div class="controls">
-      <button id="playA">▶</button>
-      <input id="pitchA" type="range" min="-50" max="50" value="0">
-      <button id="loopA">LOOP</button>
-    </div>
-
-    <div class="cues">
-      <button data-deck="A" data-cue="0">C1</button>
-      <button data-deck="A" data-cue="1">C2</button>
-      <button data-deck="A" data-cue="2">C3</button>
-      <button data-deck="A" data-cue="3">C4</button>
-    </div>
-  </div>
-
-  <!-- MIXER -->
-  <div class="mixer">
-    <input id="cross" type="range" min="0" max="100" value="50">
-    <button id="sync">SYNC</button>
-    <button id="fx">FX</button>
-  </div>
-
-  <!-- DECK B -->
-  <div class="deck">
-    <canvas id="waveB"></canvas>
-
-    <div class="controls">
-      <button id="playB">▶</button>
-      <input id="pitchB" type="range" min="-50" max="50" value="0">
-      <button id="loopB">LOOP</button>
-    </div>
-
-    <div class="cues">
-      <button data-deck="B" data-cue="0">C1</button>
-      <button data-deck="B" data-cue="1">C2</button>
-      <button data-deck="B" data-cue="2">C3</button>
-      <button data-deck="B" data-cue="3">C4</button>
-    </div>
-  </div>
-
+<div class="ui">
+  <img src="img/turntable.png" id="bg">
+  <canvas id="overlay"></canvas>
 </div>
 
-<!-- LIBRARY -->
-<div class="library" id="library">
-  🎵 Arrastra canciones aquí
-</div>
-
-<!-- AUDIO -->
-<audio id="a" preload="auto"></audio>
-<audio id="b" preload="auto"></audio>
+<audio id="a"></audio>
+<audio id="b"></audio>
 
 <script src="script.js"></script>
 </body>
