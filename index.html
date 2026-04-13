@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turntable GOD</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- DECK A -->
+  <div class="deck" id="deckA">
+    <div class="platter">
+      <div class="vinyl" id="vinylA">
+        <div class="cover" id="coverA"></div>
+      </div>
+    </div>
+    <div class="needle" id="needleA"></div>
+    <button onclick="playDeck('A')">▶</button>
+    <button onclick="pauseDeck('A')">⏸</button>
+    <button onclick="openLibrary('A')">🎵</button>
+    <div class="pitch" id="pitchA"></div>
+  </div>
+
+  <!-- MIXER -->
+  <div class="mixer">
+    <input type="range" id="crossfader" min="0" max="100" value="50">
+    <button onclick="toggleFX()">FX</button>
+  </div>
+
+  <!-- DECK B -->
+  <div class="deck" id="deckB">
+    <div class="platter">
+      <div class="vinyl" id="vinylB">
+        <div class="cover" id="coverB"></div>
+      </div>
+    </div>
+    <div class="needle" id="needleB"></div>
+    <button onclick="playDeck('B')">▶</button>
+    <button onclick="pauseDeck('B')">⏸</button>
+    <button onclick="openLibrary('B')">🎵</button>
+    <div class="pitch" id="pitchB"></div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <ul id="trackList"></ul>
+    <button onclick="closeLibrary()">Cerrar</button>
+  </div>
+</div>
+
+<audio id="audioA"></audio>
+<audio id="audioB"></audio>
+<audio id="crackle" src="audio/crackle.mp3" loop></audio>
+
+<script src="script.js"></script>
+</body>
+</html>
