@@ -2,19 +2,61 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>DJ GOD FINAL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DJ APP PRO</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h2>DJ GOD 🔥</h2>
+<div class="app">
 
-<canvas id="canvas"></canvas>
+  <!-- DECK A -->
+  <div class="deck">
+    <canvas id="waveA"></canvas>
+    <div class="controls">
+      <button onclick="toggle(deckA)">▶</button>
+      <input type="range" min="-50" max="50" value="0" oninput="setPitch(deckA,this.value)">
+      <button onclick="setLoop(deckA)">LOOP</button>
+    </div>
+    <div class="cues">
+      <button onclick="cue(deckA,0)">C1</button>
+      <button onclick="cue(deckA,1)">C2</button>
+      <button onclick="cue(deckA,2)">C3</button>
+      <button onclick="cue(deckA,3)">C4</button>
+    </div>
+  </div>
 
-<img id="source" src="img/pack.png" hidden>
+  <!-- MIXER -->
+  <div class="mixer">
+    <input type="range" id="cross" min="0" max="100" value="50">
+    <button onclick="sync()">SYNC</button>
+    <button onclick="toggleFX()">FX</button>
+  </div>
 
-<audio id="audioA" src="audio/deckA.mp3"></audio>
-<audio id="audioB" src="audio/deckB.mp3"></audio>
+  <!-- DECK B -->
+  <div class="deck">
+    <canvas id="waveB"></canvas>
+    <div class="controls">
+      <button onclick="toggle(deckB)">▶</button>
+      <input type="range" min="-50" max="50" value="0" oninput="setPitch(deckB,this.value)">
+      <button onclick="setLoop(deckB)">LOOP</button>
+    </div>
+    <div class="cues">
+      <button onclick="cue(deckB,0)">C1</button>
+      <button onclick="cue(deckB,1)">C2</button>
+      <button onclick="cue(deckB,2)">C3</button>
+      <button onclick="cue(deckB,3)">C4</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="library" id="library">
+  🎵 Arrastra canciones aquí
+</div>
+
+<audio id="a"></audio>
+<audio id="b"></audio>
 
 <script src="script.js"></script>
 </body>
