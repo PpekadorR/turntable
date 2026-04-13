@@ -1,107 +1,128 @@
-const audioA=document.getElementById("audioA");
-const audioB=document.getElementById("audioB");
-const crackle=document.getElementById("crackle");
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const ctx = new AudioContext();
 
-const vinylA=document.getElementById("vinylA");
-const vinylB=document.getElementById("vinylB");
+/* CREAR DECK */
+function createDeck(audioEl){
+  const source = ctx.createMediaElementSource(audioEl);
+  const gain = ctx.createGain();
 
-const needleA=document.getElementById("needleA");
-const needleB=document.getElementById("needleB");
+  const low = ctx.createBiquadFilter();
+  low.type="lowshelf";
+  low.frequency.value=200;
 
-const crossfader=document.getElementById("crossfader");
+  const mid = ctx.createBiquadFilter();
+  mid.type="peaking";
+  mid.frequency.value=1000;
 
-let currentDeck=null;
+  const high = ctx.createBiquadFilter();
+  high.type="highshelf";
+  high.frequency.value=3000;
 
-/* TRACKS */
-const tracks=[
- {name:"A1",file:"audio/deckA_1.mp3",cover:"img/a1.jpg"},
- {name:"A2",file:"audio/deckA_2.mp3",cover:"img/a2.jpg"},
- {name:"B1",file:"audio/deckB_1.mp3",cover:"img/b1.jpg"},
- {name:"B2",file:"audio/deckB_2.mp3",cover:"img/b2.jpg"}
-];
+  source.connect(low);
+  low.connect(mid);
+  mid.connect(high);
+  high.connect(gain);
+  gain.connect(ctx.destination);
 
-const modal=document.getElementById("modal");
-const list=document.getElementById("trackList");
-
-tracks.forEach((t,i)=>{
- let li=document.createElement("li");
- li.innerText=t.name;
- li.onclick=()=>loadTrack(i);
- list.appendChild(li);
-});
-
-function openLibrary(deck){
- currentDeck=deck;
- modal.style.display="block";
+  return {audio:audioEl, gain, low, mid, high};
 }
 
-function closeLibrary(){
- modal.style.display="none";
-}
-
-function loadTrack(i){
- let t=tracks[i];
- if(currentDeck==="A"){
-   audioA.src=t.file;
-   document.getElementById("coverA").style.backgroundImage=`url(${t.cover})`;
- }else{
-   audioB.src=t.file;
-   document.getElementById("coverB").style.backgroundImage=`url(${t.cover})`;
- }
- closeLibrary();
-}
+const deckA = createDeck(document.getElementById("audioA"));
+const deckB = createDeck(document.getElementById("audioB"));
 
 /* PLAY */
 function playDeck(d){
- let audio=d==="A"?audioA:audioB;
- let vinyl=d==="A"?vinylA:vinylB;
- let needle=d==="A"?needleA:needleB;
-
- audio.play();
- vinyl.classList.add("spin");
- needle.classList.add("playing");
- crackle.play();
+  let deck = d==="A"?deckA:deckB;
+  deck.audio.play();
+  document.getElementById("vinyl"+d).classList.add("spin");
 }
 
 function pauseDeck(d){
- let audio=d==="A"?audioA:audioB;
- let vinyl=d==="A"?vinylA:vinylB;
- let needle=d==="A"?needleA:needleB;
-
- audio.pause();
- vinyl.classList.remove("spin");
- needle.classList.remove("playing");
+  let deck = d==="A"?deckA:deckB;
+  deck.audio.pause();
+  document.getElementById("vinyl"+d).classList.remove("spin");
 }
 
-/* CROSSFADER */
-crossfader.addEventListener("input",()=>{
- let v=crossfader.value/100;
- audioA.volume=1-v;
- audioB.volume=v;
-});
-
-/* SCRATCH REAL (TOUCH) */
-function enableScratch(vinyl,audio){
- let isDown=false;
-
- vinyl.addEventListener("touchstart",()=>isDown=true);
- vinyl.addEventListener("touchend",()=>isDown=false);
-
- vinyl.addEventListener("touchmove",(e)=>{
-  if(!isDown) return;
-
-  let delta=e.touches[0].clientX;
-  audio.currentTime+=delta*0.0001;
- });
+/* EQ */
+function setEQ(d,band,value){
+  let deck = d==="A"?deckA:deckB;
+  deck[band].gain.value = value;
 }
 
-enableScratch(vinylA,audioA);
-enableScratch(vinylB,audioB);
-
-/* FX simple */
-let fxOn=false;
-function toggleFX(){
- fxOn=!fxOn;
- audioA.playbackRate=fxOn?0.9:1;
- audioB.playbackRate=fxOn?0.9:1;
+/* CROSS */
+function setCrossfader(v){
+  let x=v/100;
+  deckA.gain.gain.value = Math.cos(x*Math.PI/2);
+  deckB.gain.gain.value = Math.cos((1-x)*Math.PI/2);
 }
+
+/* PITCH */
+function setPitch(d,v){
+  let deck = d==="A"?deckA:deckB;
+  deck.audio.playbackRate = 1 + v/100;
+}
+
+/* LOOP */
+let loops={A:null,B:null};
+
+function setLoop(d){
+  let deck = d==="A"?deckA:deckB;
+  let start = deck.audio.currentTime;
+  let end = start + 4;
+
+  loops[d]={start,end};
+
+  setInterval(()=>{
+    if(deck.audio.currentTime>=end){
+      deck.audio.currentTime=start;
+    }
+  },50);
+}
+
+/* SCRATCH */
+function enableScratch(id,deck){
+  let el=document.getElementById(id);
+  let down=false;
+
+  el.addEventListener("mousedown",()=>down=true);
+  window.addEventListener("mouseup",()=>down=false);
+
+  el.addEventListener("mousemove",(e)=>{
+    if(!down) return;
+    deck.audio.currentTime += e.movementX * 0.01;
+  });
+}
+
+enableScratch("vinylA",deckA);
+enableScratch("vinylB",deckB);
+
+/* WAVEFORM */
+const analyser = ctx.createAnalyser();
+deckA.gain.connect(analyser);
+deckB.gain.connect(analyser);
+
+const canvas=document.getElementById("waveform");
+const ctx2=canvas.getContext("2d");
+
+function draw(){
+  requestAnimationFrame(draw);
+
+  let data=new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteTimeDomainData(data);
+
+  ctx2.fillStyle="#000";
+  ctx2.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx2.strokeStyle="#0f0";
+  ctx2.beginPath();
+
+  for(let i=0;i<data.length;i++){
+    let x=i;
+    let y=data[i]/2;
+    ctx2.lineTo(x,y);
+  }
+
+  ctx2.stroke();
+}
+
+draw();
