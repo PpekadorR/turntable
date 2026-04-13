@@ -1,128 +1,122 @@
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const img = document.getElementById("source");
+
+const audioA = document.getElementById("audioA");
+const audioB = document.getElementById("audioB");
+
+let imageData, pixels;
+
+/* AUDIO CONTEXT */
 const AudioContext = window.AudioContext || window.webkitAudioContext;
-const ctx = new AudioContext();
+const audioCtx = new AudioContext();
 
-/* CREAR DECK */
-function createDeck(audioEl){
-  const source = ctx.createMediaElementSource(audioEl);
-  const gain = ctx.createGain();
-
-  const low = ctx.createBiquadFilter();
-  low.type="lowshelf";
-  low.frequency.value=200;
-
-  const mid = ctx.createBiquadFilter();
-  mid.type="peaking";
-  mid.frequency.value=1000;
-
-  const high = ctx.createBiquadFilter();
-  high.type="highshelf";
-  high.frequency.value=3000;
-
-  source.connect(low);
-  low.connect(mid);
-  mid.connect(high);
-  high.connect(gain);
-  gain.connect(ctx.destination);
-
-  return {audio:audioEl, gain, low, mid, high};
+function createDeck(audio){
+  const source = audioCtx.createMediaElementSource(audio);
+  const gain = audioCtx.createGain();
+  source.connect(gain);
+  gain.connect(audioCtx.destination);
+  return {audio, gain};
 }
 
-const deckA = createDeck(document.getElementById("audioA"));
-const deckB = createDeck(document.getElementById("audioB"));
+const deckA = createDeck(audioA);
+const deckB = createDeck(audioB);
 
-/* PLAY */
-function playDeck(d){
-  let deck = d==="A"?deckA:deckB;
-  deck.audio.play();
-  document.getElementById("vinyl"+d).classList.add("spin");
+/* LOAD IMAGE */
+img.onload = () => {
+  canvas.width = img.width;
+  canvas.height = img.height;
+
+  ctx.drawImage(img,0,0);
+  imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+  pixels = imageData.data;
+};
+
+/* CLICK INTERACTION */
+canvas.addEventListener("click",(e)=>{
+
+  const rect = canvas.getBoundingClientRect();
+
+  const x = Math.floor((e.clientX - rect.left) * (canvas.width / rect.width));
+  const y = Math.floor((e.clientY - rect.top) * (canvas.height / rect.height));
+
+  handleZones(x,y);
+});
+
+/* ZONAS DJ */
+function handleZones(x,y){
+
+  // 💿 VINILO A
+  if(x>50 && x<350 && y>50 && y<350){
+    togglePlay(deckA,"A");
+  }
+
+  // 💿 VINILO B
+  else if(x>400 && x<700 && y>50 && y<350){
+    togglePlay(deckB,"B");
+  }
+
+  // 🎚️ CROSSFADER
+  else if(y>500 && y<650){
+    let value = x / canvas.width;
+    setCrossfader(value);
+  }
+
 }
 
-function pauseDeck(d){
-  let deck = d==="A"?deckA:deckB;
-  deck.audio.pause();
-  document.getElementById("vinyl"+d).classList.remove("spin");
+/* PLAY/PAUSE */
+function togglePlay(deck,id){
+  if(deck.audio.paused){
+    deck.audio.play();
+  }else{
+    deck.audio.pause();
+  }
 }
 
-/* EQ */
-function setEQ(d,band,value){
-  let deck = d==="A"?deckA:deckB;
-  deck[band].gain.value = value;
-}
-
-/* CROSS */
-function setCrossfader(v){
-  let x=v/100;
-  deckA.gain.gain.value = Math.cos(x*Math.PI/2);
-  deckB.gain.gain.value = Math.cos((1-x)*Math.PI/2);
-}
-
-/* PITCH */
-function setPitch(d,v){
-  let deck = d==="A"?deckA:deckB;
-  deck.audio.playbackRate = 1 + v/100;
-}
-
-/* LOOP */
-let loops={A:null,B:null};
-
-function setLoop(d){
-  let deck = d==="A"?deckA:deckB;
-  let start = deck.audio.currentTime;
-  let end = start + 4;
-
-  loops[d]={start,end};
-
-  setInterval(()=>{
-    if(deck.audio.currentTime>=end){
-      deck.audio.currentTime=start;
-    }
-  },50);
+/* CROSSFADER */
+function setCrossfader(x){
+  deckA.gain.gain.value = 1 - x;
+  deckB.gain.gain.value = x;
 }
 
 /* SCRATCH */
-function enableScratch(id,deck){
-  let el=document.getElementById(id);
-  let down=false;
+let scratchingA=false;
+let scratchingB=false;
 
-  el.addEventListener("mousedown",()=>down=true);
-  window.addEventListener("mouseup",()=>down=false);
+canvas.addEventListener("mousedown",(e)=>{
+  let pos = getPos(e);
 
-  el.addEventListener("mousemove",(e)=>{
-    if(!down) return;
-    deck.audio.currentTime += e.movementX * 0.01;
-  });
-}
-
-enableScratch("vinylA",deckA);
-enableScratch("vinylB",deckB);
-
-/* WAVEFORM */
-const analyser = ctx.createAnalyser();
-deckA.gain.connect(analyser);
-deckB.gain.connect(analyser);
-
-const canvas=document.getElementById("waveform");
-const ctx2=canvas.getContext("2d");
-
-function draw(){
-  requestAnimationFrame(draw);
-
-  let data=new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteTimeDomainData(data);
-
-  ctx2.fillStyle="#000";
-  ctx2.fillRect(0,0,canvas.width,canvas.height);
-
-  ctx2.strokeStyle="#0f0";
-  ctx2.beginPath();
-
-  for(let i=0;i<data.length;i++){
-    let x=i;
-    let y=data[i]/2;
-    ctx2.lineTo(x,y);
+  if(pos.x>50 && pos.x<350 && pos.y>50 && pos.y<350){
+    scratchingA=true;
   }
 
-  ctx2.stroke();
-}
+  if(pos.x>400 && pos.x<700 && pos.y>50 && pos.y<350){
+    scratchingB=true;
+  }
+});
 
-draw();
+canvas.addEventListener("mouseup",()=>{
+  scratchingA=false;
+  scratchingB=false;
+});
+
+canvas.addEventListener("mousemove",(e)=>{
+  let pos = getPos(e);
+
+  if(scratchingA){
+    deckA.audio.currentTime += e.movementX * 0.01;
+  }
+
+  if(scratchingB){
+    deckB.audio.currentTime += e.movementX * 0.01;
+  }
+});
+
+/* UTIL */
+function getPos(e){
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: Math.floor((e.clientX - rect.left) * (canvas.width / rect.width)),
+    y: Math.floor((e.clientY - rect.top) * (canvas.height / rect.height))
+  };
+}
