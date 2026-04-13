@@ -1,12 +1,34 @@
 body{
+  margin:0;
   background:#000;
   color:#0f0;
-  text-align:center;
   font-family:sans-serif;
 }
 
+.app{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.deck{
+  width:45%;
+  margin:10px;
+}
+
 canvas{
-  max-width:95%;
-  border:2px solid #222;
-  cursor:pointer;
+  width:100%;
+  height:120px;
+  background:#111;
+}
+
+.mixer{
+  width:100%;
+  text-align:center;
+}
+
+.library{
+  padding:20px;
+  border:2px dashed #0f0;
+  margin:20px;
 }
